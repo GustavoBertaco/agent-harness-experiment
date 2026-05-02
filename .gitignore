@@ -1,0 +1,18 @@
+# Local machine-specific Claude Code settings
+.claude/settings.local.json
+CLAUDE.local.md
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+
+# Data files (add exceptions per experiment as needed)
+*.parquet
+*.csv
+*.db
+
+# OS
+.DS_Store
+Thumbs.db
