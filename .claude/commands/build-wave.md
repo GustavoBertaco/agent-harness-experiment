@@ -49,22 +49,46 @@ Wait for all agents to complete. For each, capture:
 - Tests written / passing
 - Any blockers
 
+### Step 4.5: Run security checks
+
+For every branch that completed without a BLOCKED status in Step 4, spawn one security-checker agent **in parallel** (single message, all at once). Each agent's prompt must be:
+
+```
+You are a security-checker agent. Scan the implementation branch for security vulnerabilities.
+
+Follow the instructions in .claude/agents/security-checker.md exactly.
+
+Branch: <branch-name>
+Spec file: <spec-file-path>
+ENG ID: <ENG-NN>
+```
+
+Wait for all security-checker agents to complete. For each, record:
+- The verdict: CLEAR, WARNINGS, or BLOCKED
+- Any CRITICAL findings (one-line summary each)
+
+Branches with a BLOCKED security verdict must be listed in the Blockers section of the summary and must NOT be merged.
+
 ### Step 5: Print summary table
 
 ```
 ## Build Wave N — Results
 
-| Spec         | Branch                        | Tests | Status   |
-|--------------|-------------------------------|-------|----------|
-| ENG-01-foo   | wave-1/ENG-01-foo             | 5/5   | DONE     |
-| ENG-02-bar   | wave-1/ENG-02-bar             | 3/4   | BLOCKED  |
+| Spec         | Branch                        | Tests | Impl Status | Security    |
+|--------------|-------------------------------|-------|-------------|-------------|
+| ENG-01-foo   | wave-1/ENG-01-foo             | 5/5   | DONE        | CLEAR       |
+| ENG-02-bar   | wave-1/ENG-02-bar             | 3/4   | BLOCKED     | (skipped)   |
+| ENG-03-baz   | wave-1/ENG-03-baz             | 4/4   | DONE        | WARNINGS    |
 
 Blockers:
-- ENG-02: <blocker description>
+- ENG-02 (impl): <blocker description>
+- ENG-03 (security): see SECURITY-REPORT-ENG-03.md for details
 
 Next steps:
 - Review branches with /review-wave N (manual)
-- Fix blockers by asking the debugger agent
+- Fix impl blockers by asking the debugger agent
+- Fix security blockers by asking the security-checker agent to re-scan after changes
+- For WARNINGS: read the SECURITY-REPORT-*.md files and decide whether to fix or acknowledge
 ```
 
 ## Important notes

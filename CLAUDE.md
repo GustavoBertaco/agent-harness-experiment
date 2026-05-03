@@ -31,6 +31,8 @@ Violating either principle is a blocker, not a judgment call.
 4. Agent writes Engineering Specs            →  specs/eng/ENG-NN-<task>.md (one per task)
 5. Human reviews specs, resolves open questions
 6. /build-wave [N]  →  parallel agents implement each ENG spec in isolated worktrees
+              └─ security-checker runs automatically after each branch is built
+                 BLOCKED verdict = must fix before proceeding; see SECURITY-REPORT-ENG-NN.md
 7. Automatic code review (reviewer agent per branch)
 8. QA testing (happy path + guardrail scenarios)
 9. Merge + release notes
