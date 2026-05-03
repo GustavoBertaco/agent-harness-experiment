@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\gusta\\\\OneDrive\\\\Documents\\\\github-cloded-repositories\\\\agent-harness-experiment\" -Force | Where-Object { $_.Name -ne '.git' } | Select-Object -Property Name, FullName, PSIsContainer | Format-List)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\gusta\\\\OneDrive\\\\Documents\\\\github-cloded-repositories\\\\agent-harness-experiment\" -Recurse -Force | Where-Object { $_.Name -ne '.git' } | Format-Table -Property FullName, Length, PSIsContainer -AutoSize)",
+      "PowerShell([System.IO.File]::ReadAllBytes\\(\"C:\\\\Users\\\\gusta\\\\OneDrive\\\\Documents\\\\github-cloded-repositories\\\\agent-harness-experiment\\\\CLAUDE.md\"\\).Length)",
+      "PowerShell([System.IO.File]::ReadAllBytes\\(\"C:\\\\Users\\\\gusta\\\\OneDrive\\\\Documents\\\\github-cloded-repositories\\\\agent-harness-experiment\\\\CLAUDE.local.md\"\\).Length)",
+      "WebSearch",
+      "WebFetch(domain:medium.com)",
+      "Bash(git -C \"C:\\\\Users\\\\gusta\\\\OneDrive\\\\Documents\\\\github-cloded-repositories\\\\agent-harness-experiment\" status)",
+      "Bash(git -C \"C:\\\\Users\\\\gusta\\\\OneDrive\\\\Documents\\\\github-cloded-repositories\\\\agent-harness-experiment\" diff)",
+      "Bash(git -C \"C:\\\\Users\\\\gusta\\\\OneDrive\\\\Documents\\\\github-cloded-repositories\\\\agent-harness-experiment\" log --oneline -5)",
+      "Bash(git -C \"C:\\\\Users\\\\gusta\\\\OneDrive\\\\Documents\\\\github-cloded-repositories\\\\agent-harness-experiment\" ls-files --others --ignored --exclude-standard)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "PowerShell(git *)",
+      "PowerShell($token = [System.Environment]::GetEnvironmentVariable\\(\"GITHUB_TOKEN\"\\); if \\($token\\) { \"GITHUB_TOKEN found\" } else { \"GITHUB_TOKEN not set\" })",
+      "PowerShell(Test-Path *)",
+      "PowerShell(winget install *)",
+      "PowerShell(gh *)",
+      "PowerShell(gh auth *)"
+    ]
+  }
+}
