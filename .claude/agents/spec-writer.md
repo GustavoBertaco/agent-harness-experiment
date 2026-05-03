@@ -19,8 +19,8 @@ Given a Product Spec file (`specs/PS-NNN-*.md`) and an architecture doc (`specs/
 
 ## Engineering Spec format
 
-Follow the ENG-NN format defined in `CLAUDE.md` exactly. Every spec must have:
-- Concrete, runnable test cases in the Test Plan
+Follow the template at `specs/eng/ENG-NN-TEMPLATE.md` exactly. Every spec must have:
+- Concrete, runnable test cases in the Test Plan (TDD: tests must be writable before implementation)
 - Explicit dependency list
 - Wave number
 
