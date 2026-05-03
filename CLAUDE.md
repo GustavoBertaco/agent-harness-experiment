@@ -2,7 +2,23 @@
 
 This repo is a local lab for experimenting with data technologies using a **Spec-Driven Development (SDD)** agentic workflow. The idea: humans author intent, agents compile structured specs, and parallel agents in isolated git worktrees execute the implementation.
 
-Inspired by Nubank's "Donkey-Kong" agentic harness (April 2026) — 1 week actual execution vs 6–8 week estimate.
+---
+
+## Non-Negotiable Principles
+
+These two principles apply to every agent in every workflow step. No exceptions.
+
+### Spec-Driven Development (SDD)
+- **No implementation without an approved spec.** Before any code is written, a Product Spec (PS-NNN) and Engineering Specs (ENG-NN) must exist and have no unresolved Open Questions.
+- **The spec is the source of truth.** Agents must implement what the spec says, not what seems reasonable. Ambiguities go back to the human as blockers — never resolved with assumptions.
+- **Specs are immutable once implementation starts.** Changes to requirements require updating the spec first, then re-implementing.
+
+### Test-Driven Development (TDD)
+- **Tests are written before implementation code.** The sequence is always: write a failing test → write the minimum code to pass it → refactor.
+- **No production code exists without a corresponding test.** If a test cannot be written for a behavior, that behavior is not implemented.
+- **All tests must pass before a task is considered done.** A partial implementation with passing tests is acceptable; untested code is not.
+
+Violating either principle is a blocker, not a judgment call.
 
 ---
 
@@ -45,100 +61,10 @@ agent-harness-experiment/
 
 ---
 
-## Product Spec Format (PS-NNN)
+## Spec Templates
 
-File: `specs/PS-NNN-<name>.md`
-
-```markdown
-# PS-NNN: <Title>
-
-**Status:** Draft | In Review | Approved
-**Author:** <name>
-**Date:** YYYY-MM-DD
-
-## Intent
-One paragraph: what is this and why does it matter?
-
-## Problem
-What pain or gap does this address?
-
-## Goals
-- Bullet list of success conditions
-
-## Non-goals
-- Explicitly out of scope
-
-## Expected Behavior
-Narrative description of how the system should behave.
-
-## Acceptance Criteria
-- AC-1: Given X, when Y, then Z
-- AC-2: ...
-
-## Constraints & Assumptions
-- Tech, time, or business constraints
-
-## Open Questions
-| # | Question | Owner | Milestone |
-|---|----------|-------|-----------|
-| 1 | ...      | ...   | ...       |
-
-## Dependencies
-- Other specs or external systems this relies on
-
-## Milestones
-| Milestone | Description |
-|-----------|-------------|
-| M1        | ...         |
-```
-
----
-
-## Engineering Spec Format (ENG-NN)
-
-File: `specs/eng/ENG-NN-<task>.md`
-
-```markdown
-# ENG-NN: <Title>
-
-**Wave:** N
-**Depends on:** ENG-XX (if any)
-
-## Overview
-One paragraph: what this spec builds and why.
-
-## Tech Choices
-- Language, libraries, tools
-
-## Implementation Steps
-1. Step one
-2. Step two
-3. ...
-
-## Test Plan
-Concrete, runnable acceptance checks:
-- `pytest tests/test_foo.py::test_bar` → passes
-- `python -c "import x; assert x.run() == expected"`
-
-## Acceptance Criteria
-- AC-1: ...
-- AC-2: ...
-
-## Notes
-Edge cases, gotchas, restrictions.
-```
-
----
-
-## Available Commands
-
-### `/build-wave [N]`
-Spawns parallel implementation agents for engineering specs.
-
-- `/build-wave` — runs all specs in `specs/eng/`
-- `/build-wave 1` — runs only specs prefixed `ENG-01-*`
-
-Each agent works in an isolated git worktree and opens a branch named `wave-N/ENG-NN-<slug>`.
+- Product Spec (PS-NNN): `specs/LIGHT-PRD-TEMPLATE.md`
+- Engineering Spec (ENG-NN): `specs/eng/ENG-NN-TEMPLATE.md`
 
 ---
 
