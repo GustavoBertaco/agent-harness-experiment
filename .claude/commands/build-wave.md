@@ -88,7 +88,7 @@ Next steps:
 - Review branches with /review-wave N (manual)
 - Fix impl blockers by asking the debugger agent
 - Fix security blockers by asking the security-checker agent to re-scan after changes
-- For WARNINGS: read the SECURITY-REPORT-*.md files and decide whether to fix or acknowledge
+- For WARNINGS: read the .security/SECURITY-REPORT-*.md files and decide whether to fix or acknowledge
 ```
 
 ## Important notes
