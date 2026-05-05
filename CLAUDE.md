@@ -26,7 +26,7 @@ Violating either principle is a blocker, not a judgment call.
 
 ```
 1. Human writes Light PRD (free-form, ~1 page)
-2. Human + agent compile PS-NNN Product Spec  →  specs/PS-NNN-<name>.md
+2. Human + agent compile PS-NNN Product Spec  →  specs/ps/PS-NNN-<name>.md
 3. Agent writes Architecture doc              →  specs/architecture.md
 4. Agent writes Engineering Specs            →  specs/eng/ENG-NN-<task>.md (one per task)
 5. Human reviews specs, resolves open questions
@@ -45,7 +45,8 @@ Steps 1–5 are spec development. Steps 6–9 are execution. The spec is the pri
 ```
 agent-harness-experiment/
 ├── specs/
-│   ├── PS-NNN-<name>.md         ← AI-compiled product specs
+│   ├── ps/
+│   │   └── PS-NNN-<name>.md     ← AI-compiled product specs
 │   ├── architecture.md          ← system design for the current experiment
 │   └── eng/
 │       ├── ENG-01-<task>.md     ← engineering specs (one per agent task)
@@ -63,7 +64,7 @@ agent-harness-experiment/
 
 ## Spec Templates
 
-- Product Spec (PS-NNN): `specs/LIGHT-PRD-TEMPLATE.md`
+- Product Spec (PS-NNN): `specs/ps/` — template at `specs/LIGHT-PRD-TEMPLATE.md`
 - Engineering Spec (ENG-NN): `specs/eng/ENG-NN-TEMPLATE.md`
 
 ---
