@@ -2,6 +2,25 @@
 .claude/settings.local.json
 CLAUDE.local.md
 
+# Security reports (never commit — contains vulnerability details)
+.security/
+
+# Secrets and environment files (never commit)
+.env
+.env.*
+!.env.example
+!.env.template
+*.pem
+*.key
+*.p12
+*.pfx
+*.cer
+*.keystore
+*.jks
+id_rsa
+id_ed25519
+id_ecdsa
+
 # Python
 __pycache__/
 *.py[cod]

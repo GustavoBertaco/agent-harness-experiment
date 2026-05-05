@@ -32,7 +32,8 @@ Violating either principle is a blocker, not a judgment call.
 5. Human reviews specs, resolves open questions
 6. /build-wave [N]  →  parallel agents implement each ENG spec in isolated worktrees
               └─ security-checker runs automatically after each branch is built
-                 BLOCKED verdict = must fix before proceeding; see SECURITY-REPORT-ENG-NN.md
+                 BLOCKED verdict = must fix before proceeding; see .security/SECURITY-REPORT-ENG-NN.md
+                 Reports go to .security/ (gitignored) — never commit them
 7. Automatic code review (reviewer agent per branch)
 8. QA testing (happy path + guardrail scenarios)
 9. Merge + release notes
@@ -56,6 +57,14 @@ agent-harness-experiment/
 │   └── <experiment-name>/       ← all code for an experiment lives here
 │       ├── README.md
 │       └── ...
+├── .security/                   ← security reports (gitignored — never commit)
+│   └── SECURITY-REPORT-ENG-NN.md
+├── references/                  ← research and external references by topic
+│   └── security/
+│       └── owasp-secure-coding-2025.md
+├── docs/
+│   └── decisions/               ← Architecture Decision Records (ADRs)
+│       └── ADR-NNN-<title>.md   ← why a harness design decision was made
 └── .claude/
     ├── agents/                  ← specialized sub-agent configs
     └── commands/                ← custom slash commands
@@ -67,6 +76,23 @@ agent-harness-experiment/
 
 - Product Spec (PS-NNN): `specs/LIGHT-PRD-TEMPLATE.md`
 - Engineering Spec (ENG-NN): `specs/eng/ENG-NN-TEMPLATE.md`
+
+---
+
+## Architecture Decision Records (ADRs)
+
+Significant harness design decisions are logged in `docs/decisions/ADR-NNN-<title>.md`. Each ADR captures:
+- **Context** — what problem or gap prompted the decision
+- **Decision** — what was chosen and why
+- **Consequences** — trade-offs and expected friction
+
+When a harness convention changes (agent behavior, workflow step, gitignore policy, etc.), write an ADR. Code tells you *what*; ADRs tell you *why*.
+
+---
+
+## Reference Material
+
+External research and standards used to inform harness decisions live in `references/<topic>/`. Add a new file when you gather material from external sources — future agents and humans can trace decisions back to their evidence base.
 
 ---
 
