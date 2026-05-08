@@ -12,10 +12,11 @@ if (-not $filePath) { exit 0 }
 
 $filePath = $filePath -replace '\\', '/'
 
-$specMatch = [regex]::Match($filePath, 'specs/([^/]+)/spec\.md$')
-$planMatch = [regex]::Match($filePath, 'specs/([^/]+)/plan\.md$')
+$specMatch  = [regex]::Match($filePath, 'specs/([^/]+)/spec\.md$')
+$planMatch  = [regex]::Match($filePath, 'specs/([^/]+)/plan\.md$')
+$tasksMatch = [regex]::Match($filePath, 'specs/([^/]+)/tasks\.md$')
 
-if (-not $specMatch.Success -and -not $planMatch.Success) { exit 0 }
+if (-not $specMatch.Success -and -not $planMatch.Success -and -not $tasksMatch.Success) { exit 0 }
 
 # Load credentials from .env.clickup
 $envFile = ".env.clickup"
@@ -139,5 +140,77 @@ if ($planMatch.Success) {
         Write-Output "ClickUp: Discovery -> complete, Refinement -> $($refinement.url), parent -> planning"
     } catch {
         Write-Warning "ClickUp post-plan hook error: $_"
+    }
+}
+
+# ── Post-Tasks ────────────────────────────────────────────────────────────────
+if ($tasksMatch.Success) {
+    $folder      = $tasksMatch.Groups[1].Value
+    $featureName = Format-FeatureName $folder
+
+    $parent = Find-CUTask $featureName
+    if (-not $parent) {
+        Write-Warning "ClickUp post-tasks hook: no parent task found for '$featureName' — skipping."
+        exit 0
+    }
+
+    # Move Refinement subtask to complete
+    $refinement = Find-CUSubtask $parent.id "Refinement"
+    if ($refinement -and $refinement.status.status -ne "complete") {
+        try {
+            Invoke-CU PUT "/task/$($refinement.id)" @{ status = "complete" } | Out-Null
+            Write-Output "ClickUp: Refinement -> complete"
+        } catch { Write-Warning "ClickUp: could not update Refinement subtask: $_" }
+    }
+
+    # Parse phases and their tasks from tasks.md
+    if (-not (Test-Path $filePath)) { exit 0 }
+
+    $phases      = [System.Collections.ArrayList]@()
+    $currentPhase = $null
+
+    foreach ($line in (Get-Content $filePath)) {
+        if ($line -match '^## Phase \d+[:\s]+(.+)$') {
+            $currentPhase = @{ Name = $matches[1].Trim(); Tasks = [System.Collections.ArrayList]@() }
+            [void]$phases.Add($currentPhase)
+        }
+        elseif ($null -ne $currentPhase -and $line -match '^- \[ \] \w+\s+(?:\[P\]\s+)?(?:\[\w+\]\s+)?(.+)$') {
+            [void]$currentPhase.Tasks.Add($matches[1].Trim())
+        }
+    }
+
+    foreach ($phase in $phases) {
+        # Idempotent: skip if phase subtask already exists
+        $phaseTask = Find-CUSubtask $parent.id $phase.Name
+        if (-not $phaseTask) {
+            try {
+                $phaseTask = Invoke-CU POST "/list/$listId/task" @{
+                    name   = $phase.Name
+                    status = "backlog"
+                    tags   = @("phase")
+                    parent = $parent.id
+                }
+                Write-Output "ClickUp: Phase -> $($phaseTask.url)"
+            } catch {
+                Write-Warning "ClickUp: could not create phase '$($phase.Name)': $_"
+                continue
+            }
+        }
+
+        foreach ($taskName in $phase.Tasks) {
+            $existingTask = Find-CUSubtask $phaseTask.id $taskName
+            if (-not $existingTask) {
+                try {
+                    $cuTask = Invoke-CU POST "/list/$listId/task" @{
+                        name   = $taskName
+                        status = "backlog"
+                        parent = $phaseTask.id
+                    }
+                    Write-Output "ClickUp: Task -> $($cuTask.url)"
+                } catch {
+                    Write-Warning "ClickUp: could not create task '$taskName': $_"
+                }
+            }
+        }
     }
 }
