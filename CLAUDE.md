@@ -129,6 +129,14 @@ External research and standards used to inform harness decisions live in `refere
 
 ---
 
+## Git Workflow (non-negotiable)
+
+- **Every local change must be made on a new branch** — never commit directly to `main` or the current feature branch unless the branch was just created for that purpose.
+- **All commits must be GPG-signed**: always use `git commit -S -m "message"`.
+- **"Open a PR"** means: sign and commit all pending local changes, then open a pull request to the remote branch. If any permission is missing, stop and ask the user to perform that action.
+
+---
+
 ## Shared Engineering Context (always loaded by coding agents)
 
 - Write tests before implementation (TDD).
