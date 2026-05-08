@@ -1,6 +1,7 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
+at `specs/001-k8s-cdc-event-generator/plan.md`
 <!-- SPECKIT END -->
 
 # Agent Harness — Conventions & Workflow
