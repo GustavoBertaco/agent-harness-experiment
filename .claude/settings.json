@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -NonInteractive -File .claude/hooks/clickup-post-write.ps1"
+          }
+        ]
+      }
+    ]
+  }
+}
