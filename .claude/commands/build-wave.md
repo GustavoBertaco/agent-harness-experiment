@@ -31,12 +31,15 @@ If the repo has uncommitted changes, warn the user but proceed unless they cance
 For each spec file, spawn one Agent with `isolation: "worktree"`. Each agent's prompt must:
 
 ```
-You are a spec-implementer agent. Your task is to implement the engineering spec at: <spec-file-path>
+You are an implementation agent working in an isolated worktree. Your task is to implement the feature described in: <spec-file-path>
 
-Follow the instructions in .claude/agents/spec-implementer.md exactly.
+Follow the speckit-implement workflow:
+1. Read the spec at <spec-file-path> as your feature specification
+2. Read any available plan.md and tasks.md in the same directory
+3. Execute all tasks in tasks.md in dependency order, TDD-first
+4. Commit after each completed phase using conventional commit messages
 
-Spec file: <spec-file-path>
-Wave: <N or "all">
+Feature spec: <spec-file-path>
 ```
 
 Spawn all agents in a single message (parallel). Do NOT run them sequentially.
