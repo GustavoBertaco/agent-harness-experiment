@@ -1,3 +1,8 @@
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan
+<!-- SPECKIT END -->
+
 # Agent Harness — Conventions & Workflow
 
 This repo is a local lab for experimenting with data technologies using a **Spec-Driven Development (SDD)** agentic workflow. The idea: humans author intent, agents compile structured specs, and parallel agents in isolated git worktrees execute the implementation.
@@ -22,21 +27,32 @@ Violating either principle is a blocker, not a judgment call.
 
 ---
 
-## The 9-Step Workflow
+## Workflow
+
+### Single-Feature Path (default — use spec-kit)
 
 ```
-1. Human writes Light PRD (free-form, ~1 page)
-2. Human + agent compile PS-NNN Product Spec  →  specs/ps/PS-NNN-<name>.md
-3. Agent writes Architecture doc              →  specs/architecture.md
-4. Agent writes Engineering Specs            →  specs/eng/ENG-NN-<task>.md (one per task)
-5. Human reviews specs, resolves open questions
-6. /build-wave [N]  →  parallel agents implement each ENG spec in isolated worktrees
+1. /speckit-specify <description>   →  specs/<###-name>/spec.md
+2. /speckit-clarify                 →  resolve open questions in spec
+3. /speckit-plan                    →  plan.md + design artifacts
+4. /speckit-analyze                 →  cross-artifact consistency check
+5. Human reviews, resolves blockers
+6. /speckit-tasks                   →  tasks.md (dependency-ordered)
+7. /speckit-implement               →  implementation, TDD-first
+8. reviewer agent                   →  code review vs. spec AC
+9. Merge + release notes
+```
+
+### Multi-Feature Parallel Path (for large experiments)
+
+```
+1–5. Same spec-kit steps per feature
+6. /build-wave [N]                  →  parallel agents in isolated worktrees
               └─ security-checker runs automatically after each branch is built
                  BLOCKED verdict = must fix before proceeding; see .security/SECURITY-REPORT-ENG-NN.md
                  Reports go to .security/ (gitignored) — never commit them
-7. Automatic code review (reviewer agent per branch)
-8. QA testing (happy path + guardrail scenarios)
-9. Merge + release notes
+7. reviewer agent per branch
+8. Merge
 ```
 
 Steps 1–5 are spec development. Steps 6–9 are execution. The spec is the primary input to every agent — never vague prompts.
@@ -48,8 +64,12 @@ Steps 1–5 are spec development. Steps 6–9 are execution. The spec is the pri
 ```
 agent-harness-experiment/
 ├── specs/
+│   ├── <###-name>/              ← spec-kit feature specs (single-feature path)
+│   │   ├── spec.md
+│   │   ├── plan.md
+│   │   └── tasks.md
 │   ├── ps/
-│   │   └── PS-NNN-<name>.md     ← AI-compiled product specs
+│   │   └── PS-NNN-<name>.md     ← AI-compiled product specs (multi-feature path)
 │   ├── architecture.md          ← system design for the current experiment
 │   └── eng/
 │       ├── ENG-01-<task>.md     ← engineering specs (one per agent task)
@@ -58,6 +78,7 @@ agent-harness-experiment/
 │   └── <experiment-name>/       ← all code for an experiment lives here
 │       ├── README.md
 │       └── ...
+├── .specify/                    ← spec-kit framework files (do not edit)
 ├── .security/                   ← security reports (gitignored — never commit)
 │   └── SECURITY-REPORT-ENG-NN.md
 ├── references/                  ← research and external references by topic
@@ -68,6 +89,7 @@ agent-harness-experiment/
 │       └── ADR-NNN-<title>.md   ← why a harness design decision was made
 └── .claude/
     ├── agents/                  ← specialized sub-agent configs
+    ├── skills/                  ← spec-kit skills
     └── commands/                ← custom slash commands
 ```
 
