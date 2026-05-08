@@ -1,0 +1,71 @@
+{
+  "type": "record",
+  "name": "Envelope",
+  "namespace": "synthetic.cdc",
+  "doc": "Debezium-compatible CDC envelope for synthetic event generation. The Row record schema is generated dynamically from PAYLOAD_TEMPLATE at runtime; the definition here uses the default PAYLOAD_TEMPLATE fields.",
+  "fields": [
+    {
+      "name": "before",
+      "type": [
+        "null",
+        {
+          "type": "record",
+          "name": "Row",
+          "namespace": "synthetic.cdc",
+          "doc": "Synthetic row state. Field set is derived from PAYLOAD_TEMPLATE at startup.",
+          "fields": [
+            {"name": "id",          "type": "string"},
+            {"name": "created_at",  "type": "long"},
+            {"name": "updated_at",  "type": "long"},
+            {"name": "status",      "type": "string"},
+            {"name": "amount",      "type": "string"},
+            {"name": "description", "type": "string"}
+          ]
+        }
+      ],
+      "default": null,
+      "doc": "Prior row state. null for 'c' (create) and 'r' (read/snapshot) operations."
+    },
+    {
+      "name": "after",
+      "type": ["null", "synthetic.cdc.Row"],
+      "default": null,
+      "doc": "New row state. null for 'd' (delete) operations."
+    },
+    {
+      "name": "source",
+      "type": {
+        "type": "record",
+        "name": "Source",
+        "namespace": "synthetic.cdc",
+        "doc": "Synthetic connector metadata mimicking a Debezium MySQL source block.",
+        "fields": [
+          {"name": "version",   "type": "string", "doc": "Debezium version constant: '1.9.7.Final'"},
+          {"name": "connector", "type": "string", "doc": "Connector type constant: 'mysql'"},
+          {"name": "name",      "type": "string", "doc": "Logical name — matches KAFKA_TOPIC value"},
+          {"name": "ts_ms",     "type": "long",   "doc": "Event timestamp in epoch milliseconds"},
+          {"name": "db",        "type": "string", "doc": "Database name constant: 'synthetic_db'"},
+          {"name": "table",     "type": "string", "doc": "Table name constant: 'events'"},
+          {"name": "file",      "type": "string", "doc": "Binlog file constant: 'binlog.000001'"},
+          {"name": "pos",       "type": "long",   "doc": "Monotonically increasing position counter per replica"}
+        ]
+      }
+    },
+    {
+      "name": "op",
+      "type": "string",
+      "doc": "Operation type: 'c' (create), 'u' (update), 'd' (delete), 'r' (read/snapshot). Distribution controlled by OP_WEIGHTS."
+    },
+    {
+      "name": "ts_ms",
+      "type": "long",
+      "doc": "Event generation timestamp in epoch milliseconds."
+    },
+    {
+      "name": "transaction",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Transaction metadata. Always null in M1 — transaction tracking is out of scope."
+    }
+  ]
+}
