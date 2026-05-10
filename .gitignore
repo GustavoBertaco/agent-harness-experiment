@@ -10,6 +10,7 @@ CLAUDE.local.md
 .env.*
 !.env.example
 !.env.template
+!.env.clickup.example
 *.pem
 *.key
 *.p12

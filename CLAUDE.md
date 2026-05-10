@@ -138,6 +138,21 @@ External research and standards used to inform harness decisions live in `refere
 
 ---
 
+## ClickUp Hooks
+
+ClickUp task creation is handled automatically by Claude Code hooks — no action needed here.
+
+- **Hook script**: `.claude/hooks/clickup-post-write.ps1`
+- **Trigger**: fires after `Write` tool calls on `specs/*/spec.md` (post-specify) and `specs/*/plan.md` (post-plan)
+- **Credentials**: copy `.env.clickup.example` → `.env.clickup` and fill in `CLICKUP_API_TOKEN` and `CLICKUP_LIST_ID`
+
+Behavior:
+- **Post-specify**: creates a parent task (`to do`, tags: `spec`, `pending-review`) + a `Discovery` subtask
+- **Post-plan**: moves `Discovery` → `complete`, creates a `Refinement` subtask, moves parent → `planning`
+- Both hooks are idempotent — they skip if a matching ClickUp task already exists or if `clickup_task_id` is in the spec frontmatter
+
+---
+
 ## Shared Engineering Context (always loaded by coding agents)
 
 - Write tests before implementation (TDD).
