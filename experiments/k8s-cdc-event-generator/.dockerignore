@@ -1,0 +1,17 @@
+.git/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+tests/
+requirements-dev.txt
+*.md
+.dockerignore
+Dockerfile
+k8s/
+.env*
+*.log
