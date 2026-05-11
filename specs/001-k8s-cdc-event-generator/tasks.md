@@ -18,11 +18,11 @@
 
 **Purpose**: Create directory structure, package init files, Docker image, pytest config, and pinned dependency files.
 
-- [ ] T001 Create experiment directory skeleton: `experiments/k8s-cdc-event-generator/producer/`, `tests/unit/`, `tests/integration/`, `k8s/`; add empty `__init__.py` to each Python package (`producer/`, `tests/unit/`, `tests/integration/`)
-- [ ] T002 [P] Create `experiments/k8s-cdc-event-generator/requirements.txt` with pinned `confluent-kafka` and `fastavro` (consult research.md §2 for version guidance)
-- [ ] T003 [P] Create `experiments/k8s-cdc-event-generator/requirements-dev.txt` with `pytest`, `pytest-mock`, `pytest-cov`
-- [ ] T004 [P] Create `experiments/k8s-cdc-event-generator/pytest.ini` with `testpaths = tests/unit tests/integration`, markers `unit` and `integration`, `addopts = -m "not integration"` (integration tests skipped by default)
-- [ ] T005 [P] Create `experiments/k8s-cdc-event-generator/Dockerfile` using `python:3.11-slim` base, non-root user `appuser (uid=1001)`, copies and installs only `requirements.txt` (no dev deps), `CMD ["python", "-m", "producer.main"]`
+- [x] T001 Create experiment directory skeleton: `experiments/k8s-cdc-event-generator/producer/`, `tests/unit/`, `tests/integration/`, `k8s/`; add empty `__init__.py` to each Python package (`producer/`, `tests/unit/`, `tests/integration/`)
+- [x] T002 [P] Create `experiments/k8s-cdc-event-generator/requirements.txt` with pinned `confluent-kafka` and `fastavro` (consult research.md §2 for version guidance)
+- [x] T003 [P] Create `experiments/k8s-cdc-event-generator/requirements-dev.txt` with `pytest`, `pytest-mock`, `pytest-cov`
+- [x] T004 [P] Create `experiments/k8s-cdc-event-generator/pytest.ini` with `testpaths = tests/unit tests/integration`, markers `unit` and `integration`, `addopts = -m "not integration"` (integration tests skipped by default)
+- [x] T005 [P] Create `experiments/k8s-cdc-event-generator/Dockerfile` using `python:3.11-slim` base, non-root user `appuser (uid=1001)`, copies and installs only `requirements.txt` (no dev deps), `CMD ["python", "-m", "producer.main"]`
 
 **Checkpoint**: Directory skeleton exists; all config files in place.
 

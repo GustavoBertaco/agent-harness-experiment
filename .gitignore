@@ -26,7 +26,13 @@ id_ecdsa
 __pycache__/
 *.py[cod]
 .venv/
+venv/
+dist/
+build/
 *.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
 
 # Data files (add exceptions per experiment as needed)
 *.parquet
