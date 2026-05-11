@@ -114,3 +114,14 @@ def build_envelope_schema(payload_template_json: str):
         ],
     }
     return fastavro.parse_schema(envelope)
+
+
+class RawSerializer:
+    def serialize(self, event: dict, schema) -> bytes:
+        buf = io.BytesIO()
+        fastavro.schemaless_writer(buf, schema, event)
+        return buf.getvalue()
+
+
+def make_serializer(config, schema) -> RawSerializer:
+    return RawSerializer()

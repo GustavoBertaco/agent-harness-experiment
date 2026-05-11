@@ -115,7 +115,7 @@ class TestBuildEnvelopeSchema:
         for name in ("before", "after", "source", "ts_ms", "transaction"):
             assert name in field_names, f"Missing field: {name}"
 
-    def test_envelope_schema_can_serialize_create_event(self):
+    def test_envelope_schema_can_serialize_create_event(self):  # noqa: E301
         from producer.schema import build_envelope_schema
         parsed = build_envelope_schema(DEFAULT_TEMPLATE)
 
@@ -148,3 +148,133 @@ class TestBuildEnvelopeSchema:
         buf = io.BytesIO()
         fastavro.schemaless_writer(buf, parsed, event)
         assert len(buf.getvalue()) > 0
+
+
+# ---------------------------------------------------------------------------
+# T016 – RawSerializer
+# ---------------------------------------------------------------------------
+
+def _make_envelope_event(parsed_schema):
+    row = {
+        "id": "abc",
+        "created_at": 1000,
+        "updated_at": 1000,
+        "status": "active",
+        "amount": "12.34",
+        "description": "test_desc",
+    }
+    source = {
+        "version": "1.9.7.Final",
+        "connector": "mysql",
+        "name": "cdc-events",
+        "ts_ms": 1000,
+        "db": "synthetic_db",
+        "table": "events",
+        "file": "binlog.000001",
+        "pos": 1,
+    }
+    return {
+        "before": None,
+        "after": ("synthetic.cdc.Row", row),
+        "source": source,
+        "op": "c",
+        "ts_ms": 1000,
+        "transaction": None,
+    }
+
+
+class TestRawSerializer:
+    def test_serialize_returns_bytes(self):
+        from producer.schema import build_envelope_schema, RawSerializer
+        schema = build_envelope_schema(DEFAULT_TEMPLATE)
+        serializer = RawSerializer()
+        event = _make_envelope_event(schema)
+        result = serializer.serialize(event, schema)
+        assert isinstance(result, bytes)
+
+    def test_output_is_non_empty(self):
+        from producer.schema import build_envelope_schema, RawSerializer
+        schema = build_envelope_schema(DEFAULT_TEMPLATE)
+        serializer = RawSerializer()
+        event = _make_envelope_event(schema)
+        result = serializer.serialize(event, schema)
+        assert len(result) > 0
+
+    def test_no_confluent_wire_prefix(self):
+        # Use an update event where before is non-null (union index=1, zigzag=2=0x02).
+        # Confluent wire format always starts with magic byte 0x00; raw Avro with a
+        # non-null union starts with 0x02, so the two are distinguishable.
+        from producer.schema import build_envelope_schema, RawSerializer
+        schema = build_envelope_schema(DEFAULT_TEMPLATE)
+        serializer = RawSerializer()
+        row = {"id": "abc", "created_at": 1000, "updated_at": 1000,
+               "status": "active", "amount": "12.34", "description": "test"}
+        source = {"version": "1.9.7.Final", "connector": "mysql", "name": "cdc-events",
+                  "ts_ms": 1000, "db": "synthetic_db", "table": "events",
+                  "file": "binlog.000001", "pos": 1}
+        event = {
+            "before": ("synthetic.cdc.Row", row),
+            "after": ("synthetic.cdc.Row", row),
+            "source": source, "op": "u", "ts_ms": 1000, "transaction": None,
+        }
+        result = serializer.serialize(event, schema)
+        assert result[0] != 0x00, "Raw mode with non-null before must not start with Confluent magic byte 0x00"
+
+    def test_output_decodable_with_schemaless_reader(self):
+        from producer.schema import build_envelope_schema, RawSerializer
+        schema = build_envelope_schema(DEFAULT_TEMPLATE)
+        serializer = RawSerializer()
+        event = _make_envelope_event(schema)
+        raw = serializer.serialize(event, schema)
+        decoded = fastavro.schemaless_reader(io.BytesIO(raw), schema)
+        assert decoded["op"] == "c"
+
+
+class TestMakeSerializer:
+    def test_returns_raw_serializer_when_no_url(self):
+        from producer.schema import build_envelope_schema, make_serializer, RawSerializer
+        from producer.config import ProducerConfig
+        import os
+        env = {
+            "KAFKA_BOOTSTRAP_SERVERS": "localhost:9092",
+            "KAFKA_TOPIC": "cdc-events",
+            "SCHEMA_REGISTRY_URL": "",
+        }
+        orig = {k: os.environ.get(k) for k in env}
+        for k, v in env.items():
+            os.environ[k] = v
+        try:
+            config = ProducerConfig()
+            schema = build_envelope_schema(DEFAULT_TEMPLATE)
+            serializer = make_serializer(config, schema)
+            assert isinstance(serializer, RawSerializer)
+        finally:
+            for k, v in orig.items():
+                if v is None:
+                    os.environ.pop(k, None)
+                else:
+                    os.environ[k] = v
+
+    def test_raw_serializer_has_serialize_method(self):
+        from producer.schema import build_envelope_schema, make_serializer
+        from producer.config import ProducerConfig
+        import os
+        env = {
+            "KAFKA_BOOTSTRAP_SERVERS": "localhost:9092",
+            "KAFKA_TOPIC": "cdc-events",
+            "SCHEMA_REGISTRY_URL": "",
+        }
+        orig = {k: os.environ.get(k) for k in env}
+        for k, v in env.items():
+            os.environ[k] = v
+        try:
+            config = ProducerConfig()
+            schema = build_envelope_schema(DEFAULT_TEMPLATE)
+            serializer = make_serializer(config, schema)
+            assert callable(getattr(serializer, "serialize", None))
+        finally:
+            for k, v in orig.items():
+                if v is None:
+                    os.environ.pop(k, None)
+                else:
+                    os.environ[k] = v
