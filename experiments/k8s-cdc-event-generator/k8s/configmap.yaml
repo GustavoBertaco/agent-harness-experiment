@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: event-generator-config
+  labels:
+    app: event-generator
+data:
+  KAFKA_BOOTSTRAP_SERVERS: "kafka.kafka.svc.cluster.local:9092"
+  KAFKA_TOPIC: "cdc-events"
+  EVENT_RATE_PER_SEC: "100"
+  SCHEMA_REGISTRY_URL: ""
+  OP_WEIGHTS: "c:70,u:20,d:10"
+  PAYLOAD_TEMPLATE: |
+    {
+      "id": "uuid",
+      "created_at": "timestamp",
+      "updated_at": "timestamp",
+      "status": "choice(active,inactive,pending)",
+      "amount": "decimal(2)",
+      "description": "string(32)"
+    }
