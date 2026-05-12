@@ -158,6 +158,87 @@ class TestBatchLog:
 
 
 # ---------------------------------------------------------------------------
+# T027 – Startup log: rate/mode/SR-url content
+# ---------------------------------------------------------------------------
+
+class TestStartupLogModeField:
+    def test_startup_log_contains_mode_raw_when_no_sr_url(self, monkeypatch, caplog):
+        _apply_env(_base_env(), monkeypatch)
+        with caplog.at_level(logging.INFO, logger="producer.main"):
+            import importlib
+            from producer import main
+            importlib.reload(main)
+            main.log_startup_summary(
+                bootstrap_servers="localhost:9092",
+                topic="cdc-events",
+                event_rate=100,
+                mode="raw",
+                schema_registry_url="",
+            )
+        assert "mode=raw" in caplog.text
+
+    def test_startup_log_contains_mode_schema_registry_when_sr_url_set(self, monkeypatch, caplog):
+        _apply_env(_base_env(), monkeypatch)
+        with caplog.at_level(logging.INFO, logger="producer.main"):
+            import importlib
+            from producer import main
+            importlib.reload(main)
+            main.log_startup_summary(
+                bootstrap_servers="localhost:9092",
+                topic="cdc-events",
+                event_rate=100,
+                mode="schema-registry",
+                schema_registry_url="http://sr:8081",
+            )
+        assert "mode=schema-registry" in caplog.text
+
+    def test_startup_log_includes_url_when_sr_set(self, monkeypatch, caplog):
+        _apply_env(_base_env(), monkeypatch)
+        with caplog.at_level(logging.INFO, logger="producer.main"):
+            import importlib
+            from producer import main
+            importlib.reload(main)
+            main.log_startup_summary(
+                bootstrap_servers="localhost:9092",
+                topic="cdc-events",
+                event_rate=100,
+                mode="schema-registry",
+                schema_registry_url="http://sr:8081",
+            )
+        assert "http://sr:8081" in caplog.text
+
+    def test_startup_log_contains_rate_per_sec(self, monkeypatch, caplog):
+        _apply_env(_base_env(), monkeypatch)
+        with caplog.at_level(logging.INFO, logger="producer.main"):
+            import importlib
+            from producer import main
+            importlib.reload(main)
+            main.log_startup_summary(
+                bootstrap_servers="localhost:9092",
+                topic="cdc-events",
+                event_rate=200,
+                mode="raw",
+                schema_registry_url="",
+            )
+        assert "200/s" in caplog.text
+
+    def test_startup_log_no_url_when_sr_empty(self, monkeypatch, caplog):
+        _apply_env(_base_env(), monkeypatch)
+        with caplog.at_level(logging.INFO, logger="producer.main"):
+            import importlib
+            from producer import main
+            importlib.reload(main)
+            main.log_startup_summary(
+                bootstrap_servers="localhost:9092",
+                topic="cdc-events",
+                event_rate=100,
+                mode="raw",
+                schema_registry_url="",
+            )
+        assert "url=" not in caplog.text
+
+
+# ---------------------------------------------------------------------------
 # T018d – Rate-drift warning when achieved < 90% of target
 # ---------------------------------------------------------------------------
 

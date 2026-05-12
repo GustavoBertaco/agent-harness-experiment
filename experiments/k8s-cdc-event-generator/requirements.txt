@@ -1,2 +1,5 @@
 confluent-kafka==2.3.0
 fastavro==1.9.4
+httpx==0.28.1
+authlib==1.7.2
+attrs==26.1.0
