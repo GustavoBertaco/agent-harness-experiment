@@ -230,6 +230,130 @@ class TestRawSerializer:
         assert decoded["op"] == "c"
 
 
+# ---------------------------------------------------------------------------
+# T023 – SchemaRegistrySerializer
+# ---------------------------------------------------------------------------
+
+class TestSchemaRegistrySerializer:
+    def test_registration_called_once_in_init(self, mocker):
+        mock_client = mocker.MagicMock()
+        mock_client.register_schema.return_value = 42
+        mocker.patch("producer.schema.SchemaRegistryClient", return_value=mock_client)
+
+        from producer.schema import SchemaRegistrySerializer
+        SchemaRegistrySerializer(url="http://sr:8081", topic="cdc-events", schema_json="{}")
+        mock_client.register_schema.assert_called_once()
+
+    def test_subject_name_is_topic_dash_value(self, mocker):
+        mock_client = mocker.MagicMock()
+        mock_client.register_schema.return_value = 5
+        mocker.patch("producer.schema.SchemaRegistryClient", return_value=mock_client)
+
+        from producer.schema import SchemaRegistrySerializer
+        SchemaRegistrySerializer(url="http://sr:8081", topic="my-topic", schema_json="{}")
+        call_args = mock_client.register_schema.call_args
+        assert call_args[0][0] == "my-topic-value"
+
+    def test_serialize_starts_with_magic_byte_0x00(self, mocker):
+        mock_client = mocker.MagicMock()
+        mock_client.register_schema.return_value = 7
+        mocker.patch("producer.schema.SchemaRegistryClient", return_value=mock_client)
+
+        from producer.schema import SchemaRegistrySerializer, build_envelope_schema
+        schema = build_envelope_schema(DEFAULT_TEMPLATE)
+        ser = SchemaRegistrySerializer(url="http://sr:8081", topic="cdc-events", schema_json="{}")
+        event = _make_envelope_event(schema)
+        result = ser.serialize(event, schema)
+        assert result[0] == 0x00
+
+    def test_serialize_has_4_byte_big_endian_schema_id(self, mocker):
+        import struct
+        mock_client = mocker.MagicMock()
+        mock_client.register_schema.return_value = 42
+        mocker.patch("producer.schema.SchemaRegistryClient", return_value=mock_client)
+
+        from producer.schema import SchemaRegistrySerializer, build_envelope_schema
+        schema = build_envelope_schema(DEFAULT_TEMPLATE)
+        ser = SchemaRegistrySerializer(url="http://sr:8081", topic="cdc-events", schema_json="{}")
+        event = _make_envelope_event(schema)
+        result = ser.serialize(event, schema)
+        schema_id = struct.unpack(">I", result[1:5])[0]
+        assert schema_id == 42
+
+    def test_exits_1_when_sr_raises_error_at_init(self, mocker):
+        from confluent_kafka.schema_registry.error import SchemaRegistryError
+        mock_client = mocker.MagicMock()
+        mock_client.register_schema.side_effect = SchemaRegistryError(500, 40401, "SR unreachable")
+        mocker.patch("producer.schema.SchemaRegistryClient", return_value=mock_client)
+
+        from producer.schema import SchemaRegistrySerializer
+        with pytest.raises(SystemExit) as exc:
+            SchemaRegistrySerializer(url="http://sr:8081", topic="cdc-events", schema_json="{}")
+        assert exc.value.code == 1
+
+
+# ---------------------------------------------------------------------------
+# T025 – make_serializer factory with SR URL
+# ---------------------------------------------------------------------------
+
+class TestMakeSerializerWithSR:
+    def test_returns_sr_serializer_when_url_non_empty(self, mocker):
+        mock_client = mocker.MagicMock()
+        mock_client.register_schema.return_value = 1
+        mocker.patch("producer.schema.SchemaRegistryClient", return_value=mock_client)
+
+        from producer.schema import build_envelope_schema, make_serializer, SchemaRegistrySerializer
+        from producer.config import ProducerConfig
+        import os
+        env = {
+            "KAFKA_BOOTSTRAP_SERVERS": "localhost:9092",
+            "KAFKA_TOPIC": "cdc-events",
+            "SCHEMA_REGISTRY_URL": "http://sr:8081",
+        }
+        orig = {k: os.environ.get(k) for k in env}
+        for k, v in env.items():
+            os.environ[k] = v
+        try:
+            config = ProducerConfig()
+            schema = build_envelope_schema(DEFAULT_TEMPLATE)
+            serializer = make_serializer(config, schema)
+            assert isinstance(serializer, SchemaRegistrySerializer)
+        finally:
+            for k, v in orig.items():
+                if v is None:
+                    os.environ.pop(k, None)
+                else:
+                    os.environ[k] = v
+
+    def test_sr_serializer_has_serialize_method(self, mocker):
+        mock_client = mocker.MagicMock()
+        mock_client.register_schema.return_value = 1
+        mocker.patch("producer.schema.SchemaRegistryClient", return_value=mock_client)
+
+        from producer.schema import build_envelope_schema, make_serializer
+        from producer.config import ProducerConfig
+        import os
+        env = {
+            "KAFKA_BOOTSTRAP_SERVERS": "localhost:9092",
+            "KAFKA_TOPIC": "cdc-events",
+            "SCHEMA_REGISTRY_URL": "http://sr:8081",
+        }
+        orig = {k: os.environ.get(k) for k in env}
+        for k, v in env.items():
+            os.environ[k] = v
+        try:
+            config = ProducerConfig()
+            schema = build_envelope_schema(DEFAULT_TEMPLATE)
+            serializer = make_serializer(config, schema)
+            assert callable(getattr(serializer, "serialize", None))
+        finally:
+            for k, v in orig.items():
+                if v is None:
+                    os.environ.pop(k, None)
+                else:
+                    os.environ[k] = v
+
+
 class TestMakeSerializer:
     def test_returns_raw_serializer_when_no_url(self):
         from producer.schema import build_envelope_schema, make_serializer, RawSerializer

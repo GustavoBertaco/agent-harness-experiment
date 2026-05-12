@@ -2,9 +2,12 @@ import io
 import json
 import logging
 import re
+import struct
 import sys
 
 import fastavro
+from confluent_kafka.schema_registry import SchemaRegistryClient, Schema
+from confluent_kafka.schema_registry.error import SchemaRegistryError
 
 logger = logging.getLogger(__name__)
 
@@ -75,45 +78,26 @@ def _build_source_schema() -> dict:
     }
 
 
-def build_envelope_schema(payload_template_json: str):
+def _build_raw_envelope_schema(payload_template_json: str) -> dict:
     row_schema = build_row_schema(payload_template_json)
     source_schema = _build_source_schema()
-
-    envelope = {
+    return {
         "type": "record",
         "name": "Envelope",
         "namespace": "synthetic.cdc",
         "fields": [
-            {
-                "name": "before",
-                "type": ["null", row_schema],
-                "default": None,
-            },
-            {
-                "name": "after",
-                "type": ["null", "synthetic.cdc.Row"],
-                "default": None,
-            },
-            {
-                "name": "source",
-                "type": source_schema,
-            },
-            {
-                "name": "op",
-                "type": "string",
-            },
-            {
-                "name": "ts_ms",
-                "type": "long",
-            },
-            {
-                "name": "transaction",
-                "type": ["null", "string"],
-                "default": None,
-            },
+            {"name": "before", "type": ["null", row_schema], "default": None},
+            {"name": "after",  "type": ["null", "synthetic.cdc.Row"], "default": None},
+            {"name": "source", "type": source_schema},
+            {"name": "op",     "type": "string"},
+            {"name": "ts_ms",  "type": "long"},
+            {"name": "transaction", "type": ["null", "string"], "default": None},
         ],
     }
-    return fastavro.parse_schema(envelope)
+
+
+def build_envelope_schema(payload_template_json: str):
+    return fastavro.parse_schema(_build_raw_envelope_schema(payload_template_json))
 
 
 class RawSerializer:
@@ -123,5 +107,30 @@ class RawSerializer:
         return buf.getvalue()
 
 
-def make_serializer(config, schema) -> RawSerializer:
+class SchemaRegistrySerializer:
+    def __init__(self, url: str, topic: str, schema_json: str) -> None:
+        try:
+            client = SchemaRegistryClient({"url": url})
+            sr_schema = Schema(schema_json, "AVRO")
+            self._schema_id: int = client.register_schema(f"{topic}-value", sr_schema)
+        except SchemaRegistryError as exc:
+            logger.error("Schema Registry unavailable: %s", exc)
+            sys.exit(1)
+
+    def serialize(self, event: dict, schema) -> bytes:
+        buf = io.BytesIO()
+        buf.write(b"\x00")
+        buf.write(struct.pack(">I", self._schema_id))
+        fastavro.schemaless_writer(buf, schema, event)
+        return buf.getvalue()
+
+
+def make_serializer(config, schema):
+    if config.schema_registry_url:
+        raw_schema = _build_raw_envelope_schema(config.payload_template)
+        return SchemaRegistrySerializer(
+            url=config.schema_registry_url,
+            topic=config.topic,
+            schema_json=json.dumps(raw_schema),
+        )
     return RawSerializer()
