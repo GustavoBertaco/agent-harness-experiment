@@ -114,9 +114,9 @@
 
 **Purpose**: Final validation across all stories.
 
-- [ ] T033 [P] Run complete unit test suite (`pytest tests/unit -v`) in `experiments/k8s-cdc-event-generator/` and fix any failing tests
-- [ ] T034 [P] Validate README.md against quickstart.md step-by-step (diff the two documents) and update `experiments/k8s-cdc-event-generator/README.md` if any prerequisite, command, or step is missing or incorrect
-- [ ] T035 Validate that `contracts/avro-envelope.avsc` matches the schema produced at runtime by the schema builder: generate a live event with default `PAYLOAD_TEMPLATE`, decode it using the `.avsc` file as the reader schema via `fastavro`, and assert no exception is raised in `experiments/k8s-cdc-event-generator/`
+- [x] T033 [P] Run complete unit test suite (`pytest tests/unit -v`) in `experiments/k8s-cdc-event-generator/` and fix any failing tests
+- [x] T034 [P] Validate README.md against quickstart.md step-by-step (diff the two documents) and update `experiments/k8s-cdc-event-generator/README.md` if any prerequisite, command, or step is missing or incorrect
+- [x] T035 Validate that `contracts/avro-envelope.avsc` matches the schema produced at runtime by the schema builder: generate a live event with default `PAYLOAD_TEMPLATE`, decode it using the `.avsc` file as the reader schema via `fastavro`, and assert no exception is raised in `experiments/k8s-cdc-event-generator/`
 
 ---
 
