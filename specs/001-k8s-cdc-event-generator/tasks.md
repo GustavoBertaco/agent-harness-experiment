@@ -90,8 +90,8 @@
 
 **Independent Test**: Scale to 3 replicas, consume topic for 10 seconds, assert total message count ≥270.
 
-- [ ] T029 [US3] Write failing integration test (marker: `integration`): scale Deployment to 3 replicas, start Kafka consumer, count messages over 10 seconds, assert count ≥270 (3 replicas × 90 events/sec × 10 sec) in `experiments/k8s-cdc-event-generator/tests/integration/test_producer_e2e.py`
-- [ ] T030 [P] [US3] Add scaling verification section to `experiments/k8s-cdc-event-generator/README.md`: `kubectl scale` command, per-pod log check command (`kubectl logs -l app=event-generator --prefix=true | grep "rate="`), explanation that total throughput = replicas × rate
+- [x] T029 [US3] Write failing integration test (marker: `integration`): scale Deployment to 3 replicas, start Kafka consumer, count messages over 10 seconds, assert count ≥270 (3 replicas × 90 events/sec × 10 sec) in `experiments/k8s-cdc-event-generator/tests/integration/test_producer_e2e.py`
+- [x] T030 [P] [US3] Add scaling verification section to `experiments/k8s-cdc-event-generator/README.md`: `kubectl scale` command, per-pod log check command (`kubectl logs -l app=event-generator --prefix=true | grep "rate="`), explanation that total throughput = replicas × rate
 
 **Checkpoint**: User Story 3 complete — horizontal scaling yields proportional throughput with per-pod log verification.
 
@@ -103,8 +103,8 @@
 
 **Independent Test**: Apply manifests, then delete them; query all resources with `app=event-generator` label and assert empty result.
 
-- [ ] T031 [US4] Write failing integration test (marker: `integration`): apply `k8s/` manifests, wait for pod Running, delete `k8s/` manifests, poll `kubectl get all -l app=event-generator --no-headers` for up to 30 seconds and assert empty output in `experiments/k8s-cdc-event-generator/tests/integration/test_producer_e2e.py`
-- [ ] T032 [US4] Audit `k8s/configmap.yaml` and `k8s/deployment.yaml`: confirm every resource (Deployment, pod template, ConfigMap) declares `app=event-generator` label; add teardown section to `experiments/k8s-cdc-event-generator/README.md` with `kubectl delete -f k8s/` and verification command
+- [x] T031 [US4] Write failing integration test (marker: `integration`): apply `k8s/` manifests, wait for pod Running, delete `k8s/` manifests, poll `kubectl get all -l app=event-generator --no-headers` for up to 30 seconds and assert empty output in `experiments/k8s-cdc-event-generator/tests/integration/test_producer_e2e.py`
+- [x] T032 [US4] Audit `k8s/configmap.yaml` and `k8s/deployment.yaml`: confirm every resource (Deployment, pod template, ConfigMap) declares `app=event-generator` label; add teardown section to `experiments/k8s-cdc-event-generator/README.md` with `kubectl delete -f k8s/` and verification command
 
 **Checkpoint**: All 4 user stories complete and independently testable.
 
