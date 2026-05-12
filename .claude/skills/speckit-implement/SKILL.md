@@ -179,7 +179,17 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 Note: This command assumes a complete task breakdown exists in tasks.md. If tasks are incomplete or missing, suggest running `/speckit-tasks` first to regenerate the task list.
 
-10. **Check for extension hooks**: After completion validation, check if `.specify/extensions.yml` exists in the project root.
+10. **ClickUp Phase Sync** (mandatory — run after completion validation, before extension hooks):
+   - Read `tasks.md` and parse each `## Phase N: …` section. For each phase, collect task lines matching `- [x]` (done) and `- [ ]` (pending) and determine the target status:
+     - All tasks `[x]` → `complete`
+     - Some `[x]`, some `[ ]` → `in progress`
+     - None `[x]` → skip (leave unchanged)
+   - Derive the feature search keyword from the spec folder name (e.g., `001-k8s-cdc-event-generator` → search keyword `001 k8s cdc event generator`).
+   - Use the ClickUp MCP to search for the parent task by that keyword, then call `clickup_get_task` with `subtasks: true` to retrieve the full subtask list.
+   - For each phase with a target status of `complete` or `in progress`, find the matching Phase subtask (name starts with `Phase N:`) and call `clickup_update_task` to set its status — only if the current subtask status differs (skip no-op updates).
+   - If any ClickUp MCP call fails or the parent task is not found, log a one-line warning to the user and continue — ClickUp sync failure must never block the implementation result.
+
+11. **Check for extension hooks**: After completion validation, check if `.specify/extensions.yml` exists in the project root.
     - If it exists, read it and look for entries under the `hooks.after_implement` key
     - If the YAML cannot be parsed or is invalid, skip hook checking silently and continue normally
     - Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
